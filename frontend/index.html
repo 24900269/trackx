@@ -1,0 +1,840 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root { 
+  --accent: #1D9E75; 
+  --accent-light: #E1F5EE; 
+  --accent-dark: #0F6E56;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  --color-background-primary: #FFFFFF;
+  --color-background-secondary: #F8F9FA;
+  --color-background-tertiary: #F3F4F6;
+  --color-border-primary: #E0E0E0;
+  --color-border-secondary: #D0D0D0;
+  --color-border-tertiary: #E8EAED;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6B7280;
+  --color-text-info: #1D9E75;
+  --border-radius-md: 10px;
+  --border-radius-lg: 14px;
+}
+body { font-family: var(--font-sans); background: var(--color-background-tertiary); }
+
+#app { max-width: 390px; margin: 0 auto; background: var(--color-background-tertiary); min-height: 100vh; display: flex; flex-direction: column; }
+
+.top-bar { background: var(--color-background-primary); border-bottom: none; padding: 16px 16px 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.top-bar .back-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--color-background-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--color-text-primary); transition: all 0.2s; }
+.top-bar .back-btn:hover { background: var(--color-background-tertiary); }
+.top-bar h1 { font-size: 18px; font-weight: 600; color: var(--color-text-primary); flex: 1; }
+.top-bar .action-btn { background: var(--accent); color: white; border: none; border-radius: var(--border-radius-md); padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(29, 158, 117, 0.2); }
+.top-bar .action-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(29, 158, 117, 0.3); }
+
+.screen { display: none; flex: 1; overflow-y: auto; padding-bottom: 80px; }
+.screen.active { display: block; }
+
+.nav-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 390px; background: var(--color-background-primary); border-top: 1px solid var(--color-border-tertiary); display: flex; z-index: 100; box-shadow: 0 -2px 8px rgba(0,0,0,0.08); }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 12px 0 16px; cursor: pointer; gap: 4px; border: none; background: none; transition: all 0.2s; }
+.nav-item:hover { background: var(--color-background-secondary); }
+.nav-icon { font-size: 20px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+.nav-label { font-size: 11px; color: var(--color-text-secondary); font-weight: 500; }
+.nav-item.active .nav-label { color: var(--accent); font-weight: 600; }
+.nav-item.active .nav-icon { filter: drop-shadow(0 0 1px var(--accent)); }
+
+.section-pad { padding: 16px; }
+.card { background: var(--color-background-primary); border-radius: var(--border-radius-lg); border: 1px solid var(--color-border-tertiary); padding: 18px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.2s; }
+.card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.card-title { font-size: 12px; font-weight: 700; color: var(--color-text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.greeting { font-size: 24px; font-weight: 700; color: var(--color-text-primary); }
+.greeting-sub { font-size: 14px; color: var(--color-text-secondary); margin-top: 4px; }
+
+.stat-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat-card { background: linear-gradient(135deg, var(--accent-light) 0%, #F0F9F6 100%); border-radius: var(--border-radius-lg); padding: 18px; border: 1px solid #D4EFE9; }
+.stat-label { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 6px; font-weight: 500; }
+.stat-val { font-size: 28px; font-weight: 700; color: var(--accent-dark); }
+.stat-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 4px; }
+
+.pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.pill-green { background: #E1F5EE; color: #0F6E56; }
+.pill-amber { background: #FAEEDA; color: #854F0B; }
+.pill-red { background: #FCEBEB; color: #A32D2D; }
+
+.worker-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 0.5px solid var(--color-border-tertiary); cursor: pointer; }
+.worker-row:last-child { border-bottom: none; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; color: var(--accent-dark); flex-shrink: 0; }
+.worker-name { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+.worker-role { font-size: 12px; color: var(--color-text-secondary); margin-top: 1px; }
+.worker-wage { font-size: 14px; font-weight: 500; color: var(--color-text-primary); text-align: right; }
+.worker-wage-label { font-size: 11px; color: var(--color-text-secondary); text-align: right; }
+
+.calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.cal-nav { background: none; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 6px 12px; cursor: pointer; font-size: 13px; color: var(--color-text-primary); }
+.cal-month { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-day-label { text-align: center; font-size: 11px; color: var(--color-text-secondary); padding: 4px 0; font-weight: 500; }
+.cal-day { text-align: center; padding: 7px 0; border-radius: var(--border-radius-md); font-size: 13px; cursor: pointer; color: var(--color-text-primary); background: none; border: none; }
+.cal-day.present { background: #E1F5EE; color: #0F6E56; font-weight: 500; }
+.cal-day.absent { background: #FCEBEB; color: #A32D2D; font-weight: 500; }
+.cal-day.today { border: 1.5px solid var(--accent); }
+.cal-day.empty { color: transparent; pointer-events: none; }
+.cal-day.future { color: var(--color-text-secondary); cursor: default; }
+
+.att-legend { display: flex; gap: 16px; margin-top: 12px; }
+.leg-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--color-text-secondary); }
+.leg-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+.sal-breakdown { display: flex; flex-direction: column; gap: 8px; }
+.sal-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.sal-row:last-child { border-bottom: none; }
+.sal-key { font-size: 14px; color: var(--color-text-secondary); }
+.sal-val { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+.sal-val.total { font-size: 18px; color: var(--accent-dark); }
+.sal-key.total { font-weight: 500; color: var(--color-text-primary); }
+
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 5px; display: block; }
+.form-input { width: 100%; padding: 10px 12px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); font-size: 15px; font-family: var(--font-sans); }
+.form-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px #1D9E7522; }
+.form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' fill='none' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.btn-primary { width: 100%; background: var(--accent); color: white; border: none; border-radius: var(--border-radius-md); padding: 13px; font-size: 15px; font-weight: 500; cursor: pointer; }
+.btn-secondary { width: 100%; background: none; color: var(--accent); border: 1.5px solid var(--accent); border-radius: var(--border-radius-md); padding: 12px; font-size: 15px; font-weight: 500; cursor: pointer; }
+
+.month-card { padding: 14px; background: var(--color-background-primary); border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.month-info { flex: 1; }
+.month-name { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+.month-detail { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+.month-salary { font-size: 16px; font-weight: 500; color: var(--accent-dark); }
+
+.section-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 12px; }
+
+.alert-banner { background: #FAEEDA; border-radius: var(--border-radius-md); padding: 10px 14px; font-size: 13px; color: #854F0B; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+.att-worker-sel { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; scrollbar-width: none; }
+.att-worker-sel::-webkit-scrollbar { display: none; }
+.att-chip { flex-shrink: 0; padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--color-border-secondary); background: none; font-size: 13px; cursor: pointer; color: var(--color-text-primary); white-space: nowrap; }
+.att-chip.selected { background: var(--accent); color: white; border-color: var(--accent); }
+
+.progress-bar-wrap { background: var(--color-background-secondary); border-radius: 20px; height: 6px; overflow: hidden; margin-top: 6px; }
+.progress-bar { height: 100%; border-radius: 20px; background: var(--accent); }
+
+.dash-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
+.dash-action { background: var(--color-background-primary); border: 1px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 20px 16px; cursor: pointer; display: flex; flex-direction: column; gap: 10px; text-align: left; transition: all 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.dash-action:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.12); border-color: var(--accent); }
+.dash-action-icon { font-size: 28px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+.dash-action-icon svg { width: 24px; height: 24px; color: var(--accent); }
+.dash-action-label { font-size: 15px; font-weight: 600; color: var(--color-text-primary); }
+.dash-action-sub { font-size: 12px; color: var(--color-text-secondary); }
+
+.nav-icon svg { width: 20px; height: 20px; color: var(--color-text-secondary); }
+.nav-item.active .nav-icon svg { color: var(--accent); }
+
+.back-btn svg { width: 20px; height: 20px; }
+.cal-nav svg { width: 16px; height: 16px; }
+.action-btn svg { color: white; }
+
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: flex-end; justify-content: center; max-width: 390px; left: 50%; transform: translateX(-50%); }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--color-background-primary); border-radius: 20px 20px 0 0; padding: 20px 16px 32px; width: 100%; }
+.modal-handle { width: 36px; height: 4px; background: var(--color-border-secondary); border-radius: 2px; margin: 0 auto 18px; }
+.modal-title { font-size: 17px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 18px; }
+
+.edit-sal-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.edit-sal-row:last-child { border-bottom: none; }
+.edit-sal-input { width: 100px; padding: 6px 10px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 14px; text-align: right; background: var(--color-background-secondary); color: var(--color-text-primary); }
+
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #1D9E75; color: white; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 500; z-index: 300; display: none; white-space: nowrap; }
+
+.home-footer-note { margin-top: 20px; font-size: 12px; color: var(--color-text-secondary); text-align: center; }
+.home-footer-note a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.home-footer-note a:hover { text-decoration: underline; }
+
+.tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+</style>
+
+<div id="app">
+  <div class="top-bar" id="topBar">
+    <button class="back-btn" id="backBtn" style="display:none" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+    <h1 id="screenTitle">Track X</h1>
+    <button class="action-btn" id="topAction" style="display:none" onclick="topActionFn()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-right:4px;vertical-align:middle;display:inline"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</button>
+  </div>
+
+  <div class="screen active" id="screen-dash">
+    <div class="section-pad">
+      <div style="margin-bottom:16px">
+        <div class="greeting">Good morning, Chief</div>
+        <div class="greeting-sub" id="dashDate">Monday, 28 April 2026</div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-label">Workers today</div>
+          <div class="stat-val" id="dashPresent">0</div>
+          <div class="stat-sub" id="dashPresentSub">of 0 present</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Daily expense</div>
+          <div class="stat-val" id="dashExpense">₹0</div>
+          <div class="stat-sub" id="dashExpSub">projected</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Today's workers</div>
+        <div id="dashWorkerList"></div>
+      </div>
+
+      <div class="card-title" style="margin-bottom:10px">Quick actions</div>
+      <div class="dash-actions">
+        <button class="dash-action" onclick="navigate('workers')">
+          <span class="dash-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+          <span class="dash-action-label">Workers</span>
+          <span class="dash-action-sub">Manage team</span>
+        </button>
+        <button class="dash-action" onclick="navigate('attendance')">
+          <span class="dash-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+          <span class="dash-action-label">Attendance</span>
+          <span class="dash-action-sub">Mark today</span>
+        </button>
+        <button class="dash-action" onclick="navigate('salary')">
+          <span class="dash-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><path d="M12 1v6m0 6v4M4.22 4.22l4.24 4.24m3.08 3.08l4.24 4.24M1 12h6m6 0h4M4.22 19.78l4.24-4.24m3.08-3.08l4.24-4.24M19 12a7 7 0 1 1-14 0 7 7 0 0 1 14 0z"/></svg></span>
+          <span class="dash-action-label">Salary</span>
+          <span class="dash-action-sub">Calculate pay</span>
+        </button>
+        <button class="dash-action" onclick="navigate('records')">
+          <span class="dash-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="13" x2="12" y2="19"/><line x1="9" y1="16" x2="15" y2="16"/></svg></span>
+          <span class="dash-action-label">Records</span>
+          <span class="dash-action-sub">Monthly summary</span>
+        </button>
+      </div>
+      <div class="home-footer-note">
+        Developed by <a href="https://www.instagram.com/_tech_x__?igsh=MWJ5N28xNTgxYXA3dQ==" target="_blank" rel="noopener noreferrer">Tech X</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-workers">
+    <div class="section-pad">
+      <div class="card" id="workerListCard">
+        <div class="card-title">All workers</div>
+        <div id="workerList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-addworker">
+    <div class="section-pad">
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">Full name</label>
+          <input class="form-input" id="wName" placeholder="e.g. Ravi Kumar" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-input form-select" id="wRole">
+            <option>Mason</option><option>Helper</option><option>Carpenter</option><option>Electrician</option><option>Plumber</option><option>Supervisor</option><option>Labour</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location / Site</label>
+          <input class="form-input" id="wLocation" placeholder="e.g. Block A" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Daily wage (₹)</label>
+          <input class="form-input" type="number" id="wWage" placeholder="e.g. 700" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone number</label>
+          <input class="form-input" type="tel" id="wPhone" placeholder="e.g. 9876543210" />
+        </div>
+        <button class="btn-primary" onclick="addWorker()">Add worker</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-workerdetail">
+    <div class="section-pad">
+      <div class="card" id="wdCard"></div>
+      <div class="card">
+        <div class="card-title">This month attendance</div>
+        <div id="wdAttSummary"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Salary this month</div>
+        <div class="sal-breakdown" id="wdSalary"></div>
+      </div>
+      <button class="btn-secondary" style="margin-top:8px" onclick="openPayModal()">Record payment</button>
+      <button class="btn-primary" style="margin-top:10px" onclick="deleteWorker()">Remove worker</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-attendance">
+    <div class="section-pad">
+      <div class="card-title">Select worker</div>
+      <div class="att-worker-sel" id="attWorkerSel"></div>
+      <div class="card">
+        <div class="calendar-header">
+          <button class="cal-nav" onclick="changeMonth(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <span class="cal-month" id="calMonthLabel"></span>
+          <button class="cal-nav" onclick="changeMonth(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="att-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#1D9E75"></div>Present</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#E24B4A"></div>Absent</div>
+          <div class="leg-item"><div class="leg-dot" style="border: 1.5px solid #1D9E75; width:10px; height:10px; border-radius:50%"></div>Today</div>
+        </div>
+      </div>
+      <div class="card" id="attSummaryCard">
+        <div class="card-title">Monthly summary</div>
+        <div id="attSummary"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-salary">
+    <div class="section-pad">
+      <div class="card-title" style="margin-bottom:10px">Select worker</div>
+      <div id="salWorkerList"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-salarydetail">
+    <div class="section-pad">
+      <div class="card" id="salDetailCard"></div>
+      <div class="card">
+        <div class="card-title">Adjustments</div>
+        <div class="form-group">
+          <label class="form-label">Overtime (₹)</label>
+          <input class="form-input" type="number" id="salOvertime" placeholder="0" oninput="recalcSalary()" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Deductions (₹)</label>
+          <input class="form-input" type="number" id="salDeduct" placeholder="0" oninput="recalcSalary()" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Advance paid (₹)</label>
+          <input class="form-input" type="number" id="salAdvance" placeholder="0" oninput="recalcSalary()" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Manual override total (₹) <span style="font-size:11px;color:var(--color-text-secondary)">(optional)</span></label>
+          <input class="form-input" type="number" id="salManual" placeholder="Leave blank to auto-calculate" oninput="recalcSalary()" />
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Final calculation</div>
+        <div class="sal-breakdown" id="finalSalBreakdown"></div>
+      </div>
+      <button class="btn-primary" style="margin-top:8px" onclick="saveSalary()">Save salary record</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-records">
+    <div class="section-pad">
+      <div class="card-title" style="margin-bottom:10px">Monthly records</div>
+      <div id="recordsList"></div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-item active" id="nav-dash" onclick="navigate('dash')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" id="nav-workers" onclick="navigate('workers')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+      <span class="nav-label">Workers</span>
+    </button>
+    <button class="nav-item" id="nav-attendance" onclick="navigate('attendance')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+      <span class="nav-label">Attendance</span>
+    </button>
+    <button class="nav-item" id="nav-salary" onclick="navigate('salary')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><path d="M12 1v6m0 6v4M4.22 4.22l4.24 4.24m3.08 3.08l4.24 4.24M1 12h6m6 0h4M4.22 19.78l4.24-4.24m3.08-3.08l4.24-4.24M19 12a7 7 0 1 1-14 0 7 7 0 0 1 14 0z"/></svg></span>
+      <span class="nav-label">Salary</span>
+    </button>
+    <button class="nav-item" id="nav-records" onclick="navigate('records')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="13" x2="12" y2="19"/><line x1="9" y1="16" x2="15" y2="16"/></svg></span>
+      <span class="nav-label">Records</span>
+    </button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Record payment</div>
+    <div class="form-group">
+      <label class="form-label">Amount paid (₹)</label>
+      <input class="form-input" type="number" id="payAmount" placeholder="0" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Payment type</label>
+      <select class="form-input form-select" id="payType">
+        <option>Advance</option><option>Mid-month</option><option>Full payment</option><option>Overtime</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Note (optional)</label>
+      <input class="form-input" id="payNote" placeholder="e.g. Advance for festival" />
+    </div>
+    <button class="btn-primary" onclick="savePayment()">Save payment</button>
+    <button class="btn-secondary" style="margin-top:8px" onclick="closePayModal()">Cancel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// localStorage helper functions
+function loadFromStorage(key, defaultValue) {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (e) {
+    console.error("Error loading from storage:", e);
+    return defaultValue;
+  }
+}
+
+function saveToStorage(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    console.error("Error saving to storage:", e);
+  }
+}
+
+// Global variables - declare early
+let workers, attendance, payments, salaryRecords, nextId;
+let currentScreen = "dash";
+let screenHistory = ["dash"];
+let selectedAttWorker = null;
+let selectedSalWorker = null;
+let detailWorkerId = null;
+let calYear, calMonth;
+
+// Initialize data from localStorage or use defaults
+workers = loadFromStorage("civil_workers", []);
+attendance = loadFromStorage("civil_attendance", {});
+payments = loadFromStorage("civil_payments", {});
+salaryRecords = loadFromStorage("civil_salaryRecords", {});
+nextId = loadFromStorage("civil_nextId", 4);
+
+const today = new Date();
+calYear = today.getFullYear();
+calMonth = today.getMonth();
+
+// Set initial selected worker if workers exist
+if (workers.length > 0 && !selectedAttWorker) {
+  selectedAttWorker = workers[0].id;
+}
+
+// Define tab names early
+const navTabs = ["dash","workers","attendance","salary","records"];
+
+function getKey(wid, y, m, d) { return `${wid}_${y}_${String(m+1).padStart(2,'0')}_${String(d).padStart(2,'0')}`; }
+function getMonthKey(wid, y, m) { return `${wid}_${y}_${m+1}`; }
+
+// CRITICAL FUNCTIONS - Define immediately after data initialization
+let topActionFn = () => {};
+
+function navigate(screen, push=true) {
+  if (push) { screenHistory.push(screen); }
+  currentScreen = screen;
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  const el = document.getElementById("screen-"+screen);
+  if (el) el.classList.add("active");
+  navTabs.forEach(t => {
+    const btn = document.getElementById("nav-"+t);
+    if (btn) btn.classList.toggle("active", t === screen);
+  });
+  const backBtn = document.getElementById("backBtn");
+  const topAction = document.getElementById("topAction");
+  const screenTitle = document.getElementById("screenTitle");
+  backBtn.style.display = screenHistory.length > 1 ? "flex" : "none";
+  topAction.style.display = "none";
+  if (screen === "dash") { screenTitle.textContent = "Track X"; }
+  else if (screen === "workers") { screenTitle.textContent = "Workers"; topAction.style.display = "block"; topAction.textContent = "+ Add"; topActionFn = () => navigate("addworker"); renderWorkers(); }
+  else if (screen === "addworker") { screenTitle.textContent = "Add Worker"; }
+  else if (screen === "workerdetail") { screenTitle.textContent = "Worker Details"; renderWorkerDetail(); }
+  else if (screen === "attendance") { screenTitle.textContent = "Attendance"; renderAttendance(); }
+  else if (screen === "salary") { screenTitle.textContent = "Salary"; renderSalaryList(); }
+  else if (screen === "salarydetail") { screenTitle.textContent = "Salary Details"; renderSalaryDetail(); }
+  else if (screen === "records") { screenTitle.textContent = "Monthly Records"; renderRecords(); }
+  if (screen === "dash") renderDash();
+}
+
+function goBack() {
+  screenHistory.pop();
+  if (screenHistory.length === 0) screenHistory = ["dash"];
+  navigate(screenHistory[screenHistory.length-1], false);
+  screenHistory.pop();
+}
+
+function initials(name) {
+  return name.split(" ").map(n=>n[0]).join("").substring(0,2).toUpperCase();
+}
+
+function getMonthDays(y, m) { return new Date(y, m+1, 0).getDate(); }
+function getFirstDay(y, m) { return new Date(y, m, 1).getDay(); }
+
+function countPresent(wid, y, m) {
+  let c = 0;
+  for (let d = 1; d <= getMonthDays(y, m); d++) {
+    if (attendance[getKey(wid, y, m, d)] === "present") c++;
+  }
+  return c;
+}
+
+function calcBaseSalary(wid, y, m) {
+  const w = workers.find(x=>x.id===wid);
+  if (!w) return 0;
+  return countPresent(wid, y, m) * w.wage;
+}
+
+function renderDash() {
+  const y = today.getFullYear(), m = today.getMonth(), d = today.getDate();
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  document.getElementById("dashDate").textContent = `${days[today.getDay()]}, ${d} ${months[m]} ${y}`;
+  let present = 0, expense = 0;
+  workers.forEach(w => {
+    if (attendance[getKey(w.id, y, m, d)] === "present") { present++; expense += w.wage; }
+  });
+  document.getElementById("dashPresent").textContent = present;
+  document.getElementById("dashPresentSub").textContent = `of ${workers.length} present`;
+  document.getElementById("dashExpense").textContent = "₹" + expense.toLocaleString("en-IN");
+  document.getElementById("dashExpSub").textContent = `${workers.length} workers`;
+  let html = "";
+  if (workers.length === 0) { html = '<div style="color:var(--color-text-secondary);font-size:14px;padding:8px 0">No workers added yet</div>'; }
+  else workers.forEach(w => {
+    const att = attendance[getKey(w.id, y, m, d)];
+    const pill = att === "present" ? `<span class="pill pill-green">Present</span>` : `<span class="pill pill-red">Absent</span>`;
+    html += `<div class="worker-row" onclick="openWorkerDetail(${w.id})">
+      <div class="avatar">${initials(w.name)}</div>
+      <div style="flex:1"><div class="worker-name">${w.name}</div><div class="worker-role">${w.role} · ${w.location}</div></div>
+      <div>${pill}</div>
+    </div>`;
+  });
+  document.getElementById("dashWorkerList").innerHTML = html;
+}
+
+function renderWorkers() {
+  let html = "";
+  if (workers.length === 0) { html = '<div style="color:var(--color-text-secondary);font-size:14px;padding:8px 0">No workers added yet. Tap + Add.</div>'; }
+  else workers.forEach(w => {
+    const p = countPresent(w.id, today.getFullYear(), today.getMonth());
+    html += `<div class="worker-row" onclick="openWorkerDetail(${w.id})">
+      <div class="avatar">${initials(w.name)}</div>
+      <div style="flex:1"><div class="worker-name">${w.name}</div><div class="worker-role">${w.role} · ${w.location}</div></div>
+      <div><div class="worker-wage">₹${w.wage}</div><div class="worker-wage-label">per day</div></div>
+    </div>`;
+  });
+  document.getElementById("workerList").innerHTML = html;
+}
+
+function openWorkerDetail(id) {
+  detailWorkerId = id;
+  navigate("workerdetail");
+}
+
+function renderWorkerDetail() {
+  const w = workers.find(x=>x.id===detailWorkerId);
+  if (!w) return;
+  const y = today.getFullYear(), m = today.getMonth();
+  document.getElementById("wdCard").innerHTML = `
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <div class="avatar" style="width:54px;height:54px;font-size:18px">${initials(w.name)}</div>
+      <div>
+        <div style="font-size:17px;font-weight:500;color:var(--color-text-primary)">${w.name}</div>
+        <div style="font-size:13px;color:var(--color-text-secondary)">${w.role}</div>
+      </div>
+    </div>
+    <div class="sal-row"><span class="sal-key">Location</span><span class="sal-val">${w.location}</span></div>
+    <div class="sal-row"><span class="sal-key">Phone</span><span class="sal-val">${w.phone}</span></div>
+    <div class="sal-row"><span class="sal-key">Daily wage</span><span class="sal-val">₹${w.wage}</span></div>
+  `;
+  const p = countPresent(w.id, y, m);
+  const days = getMonthDays(y, m);
+  const pct = Math.round(p / Math.min(today.getDate(), days) * 100);
+  document.getElementById("wdAttSummary").innerHTML = `
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+      <span style="font-size:14px;color:var(--color-text-secondary)">Days present</span>
+      <span style="font-size:14px;font-weight:500">${p} / ${today.getDate()} days</span>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-top:6px">${pct}% attendance this month</div>
+  `;
+  const base = calcBaseSalary(w.id, y, m);
+  const rec = salaryRecords[getMonthKey(w.id, y, m)] || {};
+  const ot = rec.overtime || 0;
+  const ded = rec.deduction || 0;
+  const adv = rec.advance || 0;
+  const final = rec.manual != null ? rec.manual : base + ot - ded - adv;
+  document.getElementById("wdSalary").innerHTML = `
+    <div class="sal-row"><span class="sal-key">Base (${p} days × ₹${w.wage})</span><span class="sal-val">₹${base.toLocaleString("en-IN")}</span></div>
+    <div class="sal-row"><span class="sal-key">Overtime</span><span class="sal-val">₹${ot}</span></div>
+    <div class="sal-row"><span class="sal-key">Deductions</span><span class="sal-val">-₹${ded}</span></div>
+    <div class="sal-row"><span class="sal-key">Advance paid</span><span class="sal-val">-₹${adv}</span></div>
+    <div class="sal-row"><span class="sal-key total">Net payable</span><span class="sal-val total">₹${Math.max(0,final).toLocaleString("en-IN")}</span></div>
+  `;
+}
+
+function addWorker() {
+  const name = document.getElementById("wName").value.trim();
+  const role = document.getElementById("wRole").value;
+  const location = document.getElementById("wLocation").value.trim();
+  const wage = parseInt(document.getElementById("wWage").value);
+  const phone = document.getElementById("wPhone").value.trim();
+  if (!name || !wage) { showToast("Please fill name and wage"); return; }
+  workers.push({ id: nextId++, name, role, location: location || "General", wage, phone: phone || "-" });
+  saveToStorage("civil_workers", workers);
+  saveToStorage("civil_nextId", nextId);
+  document.getElementById("wName").value = "";
+  document.getElementById("wLocation").value = "";
+  document.getElementById("wWage").value = "";
+  document.getElementById("wPhone").value = "";
+  showToast("Worker added!");
+  navigate("workers");
+}
+
+function deleteWorker() {
+  if (!confirm("Remove this worker?")) return;
+  workers = workers.filter(w => w.id !== detailWorkerId);
+  saveToStorage("civil_workers", workers);
+  showToast("Worker removed");
+  navigate("workers");
+}
+
+function renderAttendance() {
+  if (!selectedAttWorker && workers.length > 0) selectedAttWorker = workers[0].id;
+  let chips = "";
+  workers.forEach(w => {
+    chips += `<button class="att-chip ${selectedAttWorker===w.id?'selected':''}" onclick="selectAttWorker(${w.id})">${w.name.split(" ")[0]}</button>`;
+  });
+  document.getElementById("attWorkerSel").innerHTML = chips || '<span style="color:var(--color-text-secondary);font-size:13px">No workers added</span>';
+  renderCalendar();
+  renderAttSummary();
+}
+
+function selectAttWorker(id) {
+  selectedAttWorker = id;
+  renderAttendance();
+}
+
+function changeMonth(delta) {
+  calMonth += delta;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+  renderAttSummary();
+}
+
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+function renderCalendar() {
+  document.getElementById("calMonthLabel").textContent = `${MONTHS[calMonth]} ${calYear}`;
+  const firstDay = getFirstDay(calYear, calMonth);
+  const days = getMonthDays(calYear, calMonth);
+  const isCurrentMonth = calYear === today.getFullYear() && calMonth === today.getMonth();
+  let html = "";
+  ["Su","Mo","Tu","We","Th","Fr","Sa"].forEach(d => {
+    html += `<div class="cal-day-label">${d}</div>`;
+  });
+  for (let i = 0; i < firstDay; i++) html += `<button class="cal-day empty">0</button>`;
+  for (let d = 1; d <= days; d++) {
+    const key = getKey(selectedAttWorker, calYear, calMonth, d);
+    const att = attendance[key];
+    const isToday = isCurrentMonth && d === today.getDate();
+    const isFuture = isCurrentMonth && d > today.getDate();
+    let cls = "cal-day";
+    if (att === "present") cls += " present";
+    else if (att === "absent") cls += " absent";
+    if (isToday) cls += " today";
+    if (isFuture) cls += " future";
+    const clickable = !isFuture ? `onclick="toggleAtt(${d})"` : "";
+    html += `<button class="${cls}" ${clickable}>${d}</button>`;
+  }
+  document.getElementById("calGrid").innerHTML = html;
+}
+
+function toggleAtt(d) {
+  if (!selectedAttWorker) return;
+  const key = getKey(selectedAttWorker, calYear, calMonth, d);
+  const cur = attendance[key];
+  if (cur === "present") attendance[key] = "absent";
+  else attendance[key] = "present";
+  saveToStorage("civil_attendance", attendance);
+  renderCalendar();
+  renderAttSummary();
+  if (calYear === today.getFullYear() && calMonth === today.getMonth()) renderDash();
+}
+
+function renderAttSummary() {
+  if (!selectedAttWorker) return;
+  const p = countPresent(selectedAttWorker, calYear, calMonth);
+  const days = getMonthDays(calYear, calMonth);
+  const w = workers.find(x=>x.id===selectedAttWorker);
+  if (!w) return;
+  const base = p * w.wage;
+  document.getElementById("attSummary").innerHTML = `
+    <div class="sal-row"><span class="sal-key">Present days</span><span class="sal-val">${p}</span></div>
+    <div class="sal-row"><span class="sal-key">Absent days</span><span class="sal-val">${days - p}</span></div>
+    <div class="sal-row"><span class="sal-key">Base salary</span><span class="sal-val">₹${base.toLocaleString("en-IN")}</span></div>
+  `;
+}
+
+function renderSalaryList() {
+  let html = "";
+  if (workers.length === 0) { html = '<div style="color:var(--color-text-secondary);font-size:14px;padding:8px 0">No workers added yet</div>'; }
+  else workers.forEach(w => {
+    const y = today.getFullYear(), m = today.getMonth();
+    const p = countPresent(w.id, y, m);
+    const base = p * w.wage;
+    const rec = salaryRecords[getMonthKey(w.id, y, m)] || {};
+    const net = rec.manual != null ? rec.manual : base + (rec.overtime||0) - (rec.deduction||0) - (rec.advance||0);
+    html += `<div class="month-card" onclick="openSalaryDetail(${w.id})">
+      <div class="avatar">${initials(w.name)}</div>
+      <div class="month-info">
+        <div class="month-name">${w.name}</div>
+        <div class="month-detail">${p} days · ₹${w.wage}/day</div>
+      </div>
+      <div class="month-salary">₹${Math.max(0,net).toLocaleString("en-IN")}</div>
+    </div>`;
+  });
+  document.getElementById("salWorkerList").innerHTML = html;
+}
+
+function openSalaryDetail(id) {
+  selectedSalWorker = id;
+  const y = today.getFullYear(), m = today.getMonth();
+  const rec = salaryRecords[getMonthKey(id, y, m)] || {};
+  document.getElementById("salOvertime").value = rec.overtime || "";
+  document.getElementById("salDeduct").value = rec.deduction || "";
+  document.getElementById("salAdvance").value = rec.advance || "";
+  document.getElementById("salManual").value = rec.manual != null ? rec.manual : "";
+  navigate("salarydetail");
+}
+
+function renderSalaryDetail() {
+  const w = workers.find(x=>x.id===selectedSalWorker);
+  if (!w) return;
+  const y = today.getFullYear(), m = today.getMonth();
+  const p = countPresent(w.id, y, m);
+  document.getElementById("salDetailCard").innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="avatar">${initials(w.name)}</div>
+      <div>
+        <div style="font-size:16px;font-weight:500;color:var(--color-text-primary)">${w.name}</div>
+        <div style="font-size:13px;color:var(--color-text-secondary)">${w.role} · ${MONTHS[m]} ${y}</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-top:2px">${p} days present · ₹${w.wage}/day</div>
+      </div>
+    </div>
+  `;
+  recalcSalary();
+}
+
+function recalcSalary() {
+  const w = workers.find(x=>x.id===selectedSalWorker);
+  if (!w) return;
+  const y = today.getFullYear(), m = today.getMonth();
+  const p = countPresent(w.id, y, m);
+  const base = p * w.wage;
+  const ot = parseInt(document.getElementById("salOvertime").value) || 0;
+  const ded = parseInt(document.getElementById("salDeduct").value) || 0;
+  const adv = parseInt(document.getElementById("salAdvance").value) || 0;
+  const manualVal = document.getElementById("salManual").value;
+  const manual = manualVal !== "" ? parseInt(manualVal) : null;
+  const net = manual != null ? manual : base + ot - ded - adv;
+  document.getElementById("finalSalBreakdown").innerHTML = `
+    <div class="sal-row"><span class="sal-key">Base (${p} × ₹${w.wage})</span><span class="sal-val">₹${base.toLocaleString("en-IN")}</span></div>
+    <div class="sal-row"><span class="sal-key">Overtime</span><span class="sal-val">+₹${ot}</span></div>
+    <div class="sal-row"><span class="sal-key">Deductions</span><span class="sal-val">-₹${ded}</span></div>
+    <div class="sal-row"><span class="sal-key">Advance paid</span><span class="sal-val">-₹${adv}</span></div>
+    ${manual != null ? `<div class="sal-row"><span class="sal-key" style="color:var(--color-text-info)">Manual override</span><span class="sal-val" style="color:var(--color-text-info)">₹${manual.toLocaleString("en-IN")}</span></div>` : ""}
+    <div class="sal-row"><span class="sal-key total">Net payable</span><span class="sal-val total">₹${Math.max(0,net).toLocaleString("en-IN")}</span></div>
+  `;
+}
+
+function saveSalary() {
+  const y = today.getFullYear(), m = today.getMonth();
+  const ot = parseInt(document.getElementById("salOvertime").value) || 0;
+  const ded = parseInt(document.getElementById("salDeduct").value) || 0;
+  const adv = parseInt(document.getElementById("salAdvance").value) || 0;
+  const manualVal = document.getElementById("salManual").value;
+  const manual = manualVal !== "" ? parseInt(manualVal) : null;
+  salaryRecords[getMonthKey(selectedSalWorker, y, m)] = { overtime: ot, deduction: ded, advance: adv, manual };
+  saveToStorage("civil_salaryRecords", salaryRecords);
+  showToast("Salary record saved!");
+  navigate("salary");
+}
+
+function renderRecords() {
+  const y = today.getFullYear(), m = today.getMonth();
+  let html = "";
+  workers.forEach(w => {
+    const p = countPresent(w.id, y, m);
+    const base = p * w.wage;
+    const rec = salaryRecords[getMonthKey(w.id, y, m)] || {};
+    const net = rec.manual != null ? rec.manual : base + (rec.overtime||0) - (rec.deduction||0) - (rec.advance||0);
+    const pct = Math.round(p / today.getDate() * 100);
+    html += `
+      <div class="card" style="margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div class="avatar">${initials(w.name)}</div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:500;color:var(--color-text-primary)">${w.name}</div>
+            <div style="font-size:12px;color:var(--color-text-secondary)">${w.role} · ${w.location}</div>
+          </div>
+          <div style="font-size:17px;font-weight:500;color:#0F6E56">₹${Math.max(0,net).toLocaleString("en-IN")}</div>
+        </div>
+        <div class="progress-bar-wrap" style="margin-bottom:8px"><div class="progress-bar" style="width:${pct}%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-secondary)">
+          <span>${p} / ${today.getDate()} days · ${pct}% attendance</span>
+          <span>${MONTHS[m]} ${y}</span>
+        </div>
+        ${rec.advance ? `<div style="margin-top:8px"><span class="pill pill-amber">Advance: ₹${rec.advance}</span></div>` : ""}
+        ${rec.overtime ? `<div style="margin-top:6px"><span class="pill pill-green">OT: ₹${rec.overtime}</span></div>` : ""}
+      </div>`;
+  });
+  if (workers.length === 0) html = '<div style="color:var(--color-text-secondary);font-size:14px;padding:8px 0">No workers added yet</div>';
+  document.getElementById("recordsList").innerHTML = html;
+}
+
+function openPayModal() {
+  document.getElementById("payModal").classList.add("open");
+}
+function closePayModal() {
+  document.getElementById("payModal").classList.remove("open");
+}
+function savePayment() {
+  const amount = parseInt(document.getElementById("payAmount").value) || 0;
+  const type = document.getElementById("payType").value;
+  if (!amount) { showToast("Enter an amount"); return; }
+  const y = today.getFullYear(), m = today.getMonth();
+  const key = getMonthKey(detailWorkerId, y, m);
+  if (!salaryRecords[key]) salaryRecords[key] = {};
+  if (type === "Advance" || type === "Mid-month") {
+    salaryRecords[key].advance = (salaryRecords[key].advance || 0) + amount;
+  }
+  saveToStorage("civil_salaryRecords", salaryRecords);
+  closePayModal();
+  document.getElementById("payAmount").value = "";
+  document.getElementById("payNote").value = "";
+  showToast("Payment recorded!");
+  renderWorkerDetail();
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  setTimeout(() => t.style.display = "none", 2000);
+}
+
+// Script loaded successfully - verification marker
+window.SCRIPT_LOADED = true;
+console.log("✓ Site Manager script loaded successfully");
+
+renderDash();
+</script>
